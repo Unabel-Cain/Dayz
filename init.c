@@ -1,6 +1,7 @@
 
 void main()
 {
+
 	Hive ce = CreateHive();
 	if ( ce )
 		ce.InitOffline();
@@ -31,7 +32,7 @@ class CustomMission: MissionServer
 {	
 	void SetRandomHealth(EntityAI itemEnt)
 	{
-		int rndHlt = Math.RandomInt(100,100);
+		int rndHlt = Math.RandomInt(40,100);
 		itemEnt.SetHealth("","",rndHlt);
 	}
 
@@ -46,146 +47,429 @@ class CustomMission: MissionServer
 		return m_player;
 	}
 	
-	override void OnInit()
+	void addMags(PlayerBase player, string mag_type, int count)
 	{
-
-		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(NumPLayersOnServer, 180000, true);		// 3 Minutes
-	}
-	
-	void NumPLayersOnServer()
-	
-	{
-		ref array<Man> players = new array<Man>;
-		GetGame().GetPlayers( players );
-		int numPlayers = players.Count();
-		
-		for ( int i = 0; i < players.Count(); ++i )
-		{
-			Man player = players.Get(i);
-			if( player )
+		if (count < 1)
+				return;
+			
+			EntityAI mag;
+			
+			for (int i = 0; i < count; i++)
 			{
-				string messPlayers = numPlayers.ToString() + " Players Online";
-				Param1<string> m_MessageParam = new Param1<string>(messPlayers); 
-				GetGame().RPCSingleParam(player, ERPCs.RPC_USER_ACTION_MESSAGE, m_MessageParam, true, player.GetIdentity()); 
-
+				mag = player.GetInventory().CreateInInventory(mag_type);
+				player.SetQuickBarEntityShortcut(mag, i + 1, true);
 			}
-		}
-		
 	}
 	
 	override void StartingEquipSetup(PlayerBase player, bool clothesChosen)
 	{
-		TStringArray head = {"BoonieHat_Black","BoonieHat_Blue","BoonieHat_DPM","BoonieHat_Dubok","BoonieHat_Flecktran","BoonieHat_NavyBlue","BoonieHat_Olive","BoonieHat_Orange","BoonieHat_Red","BoonieHat_Tan","CowboyHat_black","CowboyHat_Brown","CowboyHat_darkBrown","CowboyHat_green","PilotkaCap","PrisonerCap","ConstructionHelmet_Blue","ConstructionHelmet_Lime","ConstructionHelmet_Orange","ConstructionHelmet_Red","ConstructionHelmet_White","ConstructionHelmet_Yellow","LeatherHat_Black","ZSh3PilotHelmet_Green","MotoHelmet_Black","MotoHelmet_Blue","MotoHelmet_Green","MotoHelmet_Grey","MotoHelmet_Lime","MotoHelmet_Red","MotoHelmet_White"};
-		TStringArray face = {"AviatorGlasses","JoeyXSunGlasses","RocketAviators","ThickGramesGlasses","ThinFramesGlasses"};
-		TStringArray tops = {"Hoodie_Blue","Hoodie_Black","Hoodie_Brown","Hoodie_Green","Hoodie_Grey","Hoodie_Red","TShirt_Beige","TShirt_Black","TShirt_Blue","TShirt_Green","TShirt_Grey","TShirt_OrangeWhiteStripes","TShirt_Red","TShirt_RedBlackStripes","TShirt_White","PrisonUniformJacket","BomberJacket_Black","BomberJacket_Blue","BomberJacket_Brown","BomberJacket_Grey","BomberJacket_Maroon","BomberJacket_Olive","BomberJacket_SkyBlue","HikingJacket_Black","HikingJacket_Blue","HikingJacket_Red","HikingJacket_Green","HuntingJacket_Autumn","HuntingJacket_Brown","HuntingJacket_Spring","HuntingJacket_Summer","HuntingJacket_Winter","RidersJacket_Black"};
-		TStringArray pants = {"Breeches_Pink","Breeches_White","PrisonUniformPants","Jeans_Black","Jeans_BlueDark","Jeans_Blue","Jeans_Brown","Jeans_Green","Jeans_Grey","CanvasPants_Beige","CanvasPants_Blue","CanvasPants_Grey","CanvasPants_Red","CanvasPants_Violet","CargoPants_Beige","CargoPants_Black","CargoPants_Blue","CargoPants_Green","CargoPants_Grey","HunterPants_Brown","HunterPants_Autumn","HunterPants_Spring","HunterPants_Summer","HunterPants_Winter"};
-		TStringArray shoes = {"Ballerinas_Blue","Ballerinas_White","AthleticShoes_Black","AthleticShoes_Blue","AthleticShoes_Brown","AthleticShoes_Green","AthleticShoes_Grey","HikingBootsLow_Beige","HikingBootsLow_Black","HikingBootsLow_Blue","HikingBootsLow_Grey","HikingBoots_Black","HikingBoots_Brown","JoggingShoes_Black","JoggingShoes_Blue","JoggingShoes_Red","JoggingShoes_Violet","JoggingShoes_White"};
-		TStringArray backpack = {"AliceBag_Black","AliceBag_Camo","AliceBag_Green","AssaultBag_Black","AssaultBag_Green","AssaultBag_Ttsko","CoyoteBag_Brown","CoyoteBag_Green","HuntingBag","MountainBag_Blue","MountainBag_Green","MountainBag_Orange","MountainBag_Red"};
-		TStringArray food = {"SardinesCan","PeachesCan","Pear","Plum","Apple","TunaCan","AgaricusMushroom","AmanitaMushroom", "BoletusMushroom","LactariusMushroom","MacrolepiotaMushroom","PleurotusMushroom","PsilocybeMushroom"};
-		TStringArray drink = {"SodaCan_Cola","SodaCan_Pipsi","SodaCan_Spite"};
-		TStringArray water = {"WaterBottle","Canteen"};
-		TStringArray gloves = {"NBCGlovesGray","WorkingGloves_Yellow"};
-		TStringArray sidearm = {"Colt1911","CZ61","CZ75","Derringer_Black","Derringer_Grey","Derringer_Pink","FNX45","Glock19","MarkarovPB","P1"};
-		
 		player.RemoveAllItems();
 		
 		EntityAI itemEnt;
-		EntityAI itemIn;
 		ItemBase itemBs;
-		int rndQnt;
-		
-		EntityAI item1 = player.GetInventory().CreateInInventory(backpack.GetRandomElement());
-		EntityAI item2 = player.GetInventory().CreateInInventory(tops.GetRandomElement());
-		EntityAI item3 = player.GetInventory().CreateInInventory(shoes.GetRandomElement());
-		EntityAI item4 = player.GetInventory().CreateInInventory(pants.GetRandomElement());
-		EntityAI item5 = player.GetInventory().CreateInInventory(head.GetRandomElement());
-		EntityAI item6 = player.GetInventory().CreateInInventory(face.GetRandomElement());
-		EntityAI item7 = player.GetInventory().CreateInInventory(food.GetRandomElement());
-		EntityAI item8 = player.GetInventory().CreateInInventory(drink.GetRandomElement());
-		EntityAI item9 = player.GetInventory().CreateInInventory(water.GetRandomElement());
-		EntityAI item10 = player.GetInventory().CreateInInventory(gloves.GetRandomElement());
-		EntityAI item11 = player.GetInventory().CreateInInventory(sidearm.GetRandomElement());
-		
-		itemEnt = player.GetInventory().CreateInInventory("AKM");
-		itemBs = ItemBase.Cast(itemEnt);
-		player.SetQuickBarEntityShortcut(itemEnt, 2);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("AK74U_Bttstck_Green");
-		itemBs = ItemBase.Cast(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("AK74_Hndgrd_Camo");
-		itemBs = ItemBase.Cast(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("AK_Suppressor");
-		itemBs = ItemBase.Cast(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("ACOGOptic");
-		itemBs = ItemBase.Cast(itemIn);
-		
-		itemEnt = player.GetInventory().CreateInInventory("BandageDressing");
-		itemBs = ItemBase.Cast(itemEnt);
-
-		itemEnt = player.GetInventory().CreateInInventory("Binoculars");
-		itemBs = ItemBase.Cast(itemEnt);
-		player.SetQuickBarEntityShortcut(itemEnt, 3);
-
-		itemEnt = player.GetInventory().CreateInInventory("HuntingKnife");
-		itemBs = ItemBase.Cast(itemEnt);
-		player.SetQuickBarEntityShortcut(itemEnt, 0);
-
-		/*itemEnt = player.GetInventory().CreateInInventory("M4A1");
-		SetRandomHealth(itemEnt);
-		player.SetQuickBarEntityShortcut(itemEnt, 1);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("M4_T3NRDSOptic");
-		SetRandomHealth(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("M4_OEBttstck");
-		SetRandomHealth(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("M4_PlasticHndgrd");
-		SetRandomHealth(itemIn);
-		
-		itemIn = itemEnt.GetInventory().CreateAttachment("M4_Suppressor");
-		SetRandomHealth(itemIn);*/
-		
-		itemEnt = player.GetInventory().CreateInInventory("Mag_AKM_Drum75Rnd_Green");
-		itemBs = ItemBase.Cast(itemEnt);
-		
-		itemEnt = player.GetInventory().CreateInInventory("Mag_AKM_Drum75Rnd_Green");
-		itemBs = ItemBase.Cast(itemEnt);
-		
-		itemEnt = player.GetInventory().CreateInInventory("Mag_AKM_Drum75Rnd_Green");
-		itemBs = ItemBase.Cast(itemEnt);
-		itemBs.SetQuantity(4);
-		
-		/*itemEnt = player.GetInventory().CreateInInventory("Mag_STANAG_30Rnd");
-		SetRandomHealth(itemEnt);
 	
-		itemEnt = player.GetInventory().CreateInInventory("AmmoBox_556x45_20Rnd");
-		SetRandomHealth(itemEnt);
+		switch (Math.RandomInt(0, 50)) {
 		
-		itemEnt = player.GetInventory().CreateInInventory("AmmoBox_556x45_20Rnd");
-		SetRandomHealth(itemEnt);
-		
-		itemEnt = player.GetInventory().CreateInInventory("AmmoBox_556x45_20Rnd");
-		SetRandomHealth(itemEnt);*/
-		
-		/*itemEnt = player.GetInventory().CreateInInventory("FNX45");
-		SetRandomHealth(itemEnt);
-		player.SetQuickBarEntityShortcut(itemEnt, 2);
+			case 0: 
+				itemEnt = player.GetInventory().CreateInInventory("PrisonUniformPants");
+				itemEnt = player.GetInventory().CreateInInventory("PrisonUniformJacket");
+				itemEnt = player.GetInventory().CreateInInventory("PrisonerCap");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Gray");
+			break;
+			
+			case 1: 
+				itemEnt = player.GetInventory().CreateInInventory("TTSKOPants");
+				itemEnt = player.GetInventory().CreateInInventory("TTsKOJacket_Camo");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBeret_CDF");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+				
+			break;
+			
+			case 2: 
+				itemEnt = player.GetInventory().CreateInInventory("TrackSuitPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TrackSuitJacket_Black");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_Black");
+				itemEnt = player.GetInventory().CreateInInventory("ThinFramesGlasses");
+			break;
+			
+			case 3: 
+				itemEnt = player.GetInventory().CreateInInventory("FirefightersPants_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("FirefighterJacket_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("FirefightersHelmet_Yellow");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+			break;
+			
+			case 4: 
+				itemEnt = player.GetInventory().CreateInInventory("GorkaPants_Autumn");
+				itemEnt = player.GetInventory().CreateInInventory("GorkaEJacket_Autumn");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+			break;
+			
+			case 5: 
+				itemEnt = player.GetInventory().CreateInInventory("HunterPants_Spring");
+				itemEnt = player.GetInventory().CreateInInventory("HuntingJacket_Spring");
+				itemEnt = player.GetInventory().CreateInInventory("HikingBoots_Brown");
+			break;
+			
+			case 6: 
+				itemEnt = player.GetInventory().CreateInInventory("HunterPants_Summer");
+				itemEnt = player.GetInventory().CreateInInventory("HuntingJacket_Summer");
+				itemEnt = player.GetInventory().CreateInInventory("HikingBoots_Brown");
+			break;
+			
+			case 7: 
+				itemEnt = player.GetInventory().CreateInInventory("Jeans_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("Hoodie_Black");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Red");
+				itemEnt = player.GetInventory().CreateInInventory("RocketAviators");
+			break;
+			
+			case 8: 
+				itemEnt = player.GetInventory().CreateInInventory("SlacksPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TShirt_RedBlackStripes");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CowboyHat_black");
+			break;
+			
+			case 9: 
+				itemEnt = player.GetInventory().CreateInInventory("SlacksPants_White");
+				itemEnt = player.GetInventory().CreateInInventory("LabCoat");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_White");
+				itemEnt = player.GetInventory().CreateInInventory("NioshFaceMask");
+			break;
+			
+			case 10: 
+				itemEnt = player.GetInventory().CreateInInventory("USMCPants_Woodland");
+				itemEnt = player.GetInventory().CreateInInventory("USMCJacket_Woodland");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+			break;
+			
+			case 11: 
+				itemEnt = player.GetInventory().CreateInInventory("USMCPants_Desert");
+				itemEnt = player.GetInventory().CreateInInventory("USMCJacket_Desert");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+			break;
+			
+			case 12: 
+				itemEnt = player.GetInventory().CreateInInventory("Breeches_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("Raincoat_Yellow");
+				itemEnt = player.GetInventory().CreateInInventory("Wellies_Black");
+			break;
+			
+			case 13: 
+				itemEnt = player.GetInventory().CreateInInventory("NBCPantsGray");
+				itemEnt = player.GetInventory().CreateInInventory("NBCJacketGray");
+				itemEnt = player.GetInventory().CreateInInventory("NBCBootsGray");
+				itemEnt = player.GetInventory().CreateInInventory("NBCGlovesGray");
+				itemEnt = player.GetInventory().CreateInInventory("GasMask");
+			break;
+			
+			case 14: 
+				itemEnt = player.GetInventory().CreateInInventory("SlacksPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("WoolCoat_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Brown");
+			break;
+			
+			case 15: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+			break;
 
-		itemIn = itemEnt.GetInventory().CreateAttachment("PistolSuppressor");
-		SetRandomHealth(itemIn);
-		
-		itemEnt = player.GetInventory().CreateInInventory("AmmoBox_45ACP_25rnd");
-		SetRandomHealth(itemEnt);
-		
-		itemEnt = player.GetInventory().CreateInInventory("Mag_FNX45_15Rnd");
-		SetRandomHealth(itemEnt);
-		
-		itemEnt = player.GetInventory().CreateInInventory("Mag_FNX45_15Rnd");
-		SetRandomHealth(itemEnt);	*/	
+			case 16: 
+				itemEnt = player.GetInventory().CreateInInventory("Sword");
+				itemEnt = player.GetInventory().CreateInInventory("GreatHelm");
+			break;
+			
+			case 17: 
+				itemEnt = player.GetInventory().CreateInInventory("Jeans_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("BomberJacket_Brown");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+			break;
+
+			case 18: 
+				itemEnt = player.GetInventory().CreateInInventory("MedicalScrubsPants_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("MedicalScrubsShirt_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("NioshFaceMask");
+			break;
+
+			case 19: 
+				itemEnt = player.GetInventory().CreateInInventory("MedicalScrubsPants_White");
+				itemEnt = player.GetInventory().CreateInInventory("MedicalScrubsShirt_White");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_White");
+				itemEnt = player.GetInventory().CreateInInventory("NioshFaceMask");
+			break;
+			
+			case 20: 
+				itemEnt = player.GetInventory().CreateInInventory("GorkaPants_Flat");
+				itemEnt = player.GetInventory().CreateInInventory("GorkaEJacket_Flat");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBeret_Red");
+			break;
+
+			case 21: 
+				itemEnt = player.GetInventory().CreateInInventory("Jeans_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("BomberJacket_Brown");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Brown");
+				itemEnt = player.GetInventory().CreateInInventory("CowboyHat_Brown");
+			break;
+
+			case 22: 
+				itemEnt = player.GetInventory().CreateInInventory("TrackSuitPants_Red");
+				itemEnt = player.GetInventory().CreateInInventory("HikingJacket_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Bandana_Redpattern");
+				itemEnt = player.GetInventory().CreateInInventory("DallasMask");
+			break;
+
+			case 23: 
+				itemEnt = player.GetInventory().CreateInInventory("TrackSuitPants_Red");
+				itemEnt = player.GetInventory().CreateInInventory("HikingJacket_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Bandana_Redpattern");
+				itemEnt = player.GetInventory().CreateInInventory("HoxtonMask");
+			break;
+
+			case 24: 
+				itemEnt = player.GetInventory().CreateInInventory("TrackSuitPants_Red");
+				itemEnt = player.GetInventory().CreateInInventory("HikingJacket_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Red");
+				itemEnt = player.GetInventory().CreateInInventory("Bandana_Redpattern");
+				itemEnt = player.GetInventory().CreateInInventory("WolfMask");
+			break;
+
+			case 25: 
+				itemEnt = player.GetInventory().CreateInInventory("NurseDress_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_Violet");
+				itemEnt = player.GetInventory().CreateInInventory("Bandana_Polkapattern");
+				itemEnt = player.GetInventory().CreateInInventory("NioshFaceMask");
+			break;
+
+			case 26: 
+				itemEnt = player.GetInventory().CreateInInventory("PolicePants");
+				itemEnt = player.GetInventory().CreateInInventory("PoliceJacket");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("OfficerHat");
+			break;
+
+			case 27: 
+				itemEnt = player.GetInventory().CreateInInventory("Jeans_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("QuiltedJacket_Blue");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Brown");
+				itemEnt = player.GetInventory().CreateInInventory("BeanieHat_Grey");
+			break;
+
+			case 28: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("RidersJacket_Black");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TankerHelmet");
+			break;
+			
+			case 29: 
+				itemEnt = player.GetInventory().CreateInInventory("ParamedicPants_Crimson");
+				itemEnt = player.GetInventory().CreateInInventory("ParamedicJacket_Crimson");
+				itemEnt = player.GetInventory().CreateInInventory("JoggingShoes_Red");
+			break;
+			
+			case 30: 
+				itemEnt = player.GetInventory().CreateInInventory("PolicePants");
+				itemEnt = player.GetInventory().CreateInInventory("PoliceJacket");
+				itemEnt = player.GetInventory().CreateInInventory("PoliceVest");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("DirtBikeHelmet_Police");
+				itemEnt = player.GetInventory().CreateInInventory("AviatorGlasses");
+			break;
+			
+			case 31: 
+				itemEnt = player.GetInventory().CreateInInventory("Breeches_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TShirt_White");
+				itemEnt = player.GetInventory().CreateInInventory("Sneakers_Red");
+				itemEnt = player.GetInventory().CreateInInventory("DirtBikeHelmet_Chernarus");
+				itemEnt = player.GetInventory().CreateInInventory("AviatorGlasses");
+			break;
+			
+			case 32: 
+				itemEnt = player.GetInventory().CreateInInventory("TTSKOPants");
+				itemEnt = player.GetInventory().CreateInInventory("TTsKOJacket_Camo");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BoonieHat_Tan");
+			break;
+			
+			case 33: 
+				itemEnt = player.GetInventory().CreateInInventory("BDUPants");
+				itemEnt = player.GetInventory().CreateInInventory("TShirt_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("MilitaryBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BandanaUntieable_RedPattern");
+			break;
+			
+			case 34: 
+				itemEnt = player.GetInventory().CreateInInventory("TTSKOPants");
+				itemEnt = player.GetInventory().CreateInInventory("TTsKOJacket_Camo");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Green");
+			break;
+			
+			case 35: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Tan");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Green");
+			break;
+			
+			case 36: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Green");
+			break;
+			
+			case 37: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Black");
+				itemEnt = player.GetInventory().CreateInInventory("UKAssVest_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Blackskull");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Black");
+			break;
+			
+			case 38: 
+				itemEnt = player.GetInventory().CreateInInventory("GorkaPants_Summer");
+				itemEnt = player.GetInventory().CreateInInventory("GorkaEJacket_Summer");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Green");
+			break;
+			
+			case 39: 
+				itemEnt = player.GetInventory().CreateInInventory("USMCPants_Woodland");
+				itemEnt = player.GetInventory().CreateInInventory("USMCJacket_Woodland");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BallisticHelmet_Green");
+			break;
+			
+			case 40: 
+				itemEnt = player.GetInventory().CreateInInventory("GhillieSuit_Woodland");
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Green");
+				itemEnt = player.GetInventory().CreateInInventory("GhillieHood_Woodland");
+			break;
+			
+			case 41: 
+				itemEnt = player.GetInventory().CreateInInventory("GhillieSuit_Mossy");
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Green");
+				itemEnt = player.GetInventory().CreateInInventory("GhillieHood_Mossy");
+			break;
+			
+			case 42: 
+				itemEnt = player.GetInventory().CreateInInventory("GhillieSuit_Tan");
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Tan");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("GhillieHood_Tan");
+			break;
+			
+			case 43: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Black");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Black");
+				itemEnt = player.GetInventory().CreateInInventory("GorkaHelmetComplete_Black");
+			break;
+			
+			case 44: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("M65Jacket_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Green");
+				itemEnt = player.GetInventory().CreateInInventory("GorkaHelmetComplete_Green");
+			break;
+			
+			case 45: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Black");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Black");
+				itemEnt = player.GetInventory().CreateInInventory("DarkMotoHelmet_Black");
+			break;
+			
+			case 46: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("HighCapacityVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalGloves_Green");
+				itemEnt = player.GetInventory().CreateInInventory("BalaclavaMask_Green");
+				itemEnt = player.GetInventory().CreateInInventory("DarkMotoHelmet_Green");
+			break;
+			
+			case 47: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Green");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Tan");
+				itemEnt = player.GetInventory().CreateInInventory("UKAssVest_Olive");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BaseballCap_Black");
+			break;
+			
+			case 48: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Tan");
+				itemEnt = player.GetInventory().CreateInInventory("AssaultBag_Green");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Beige");
+				itemEnt = player.GetInventory().CreateInInventory("BoonieHat_Tan");
+			break;
+			
+			case 49: 
+				itemEnt = player.GetInventory().CreateInInventory("CargoPants_Black");
+				itemEnt = player.GetInventory().CreateInInventory("TacticalShirt_Black");
+				itemEnt = player.GetInventory().CreateInInventory("AssaultBag_Black");
+				itemEnt = player.GetInventory().CreateInInventory("CombatBoots_Black");
+				itemEnt = player.GetInventory().CreateInInventory("WorkingGloves_Black");
+				itemEnt = player.GetInventory().CreateInInventory("BoonieHat_Black");
+			break;
+			
+		}
+				
+		itemEnt = player.GetInventory().CreateInInventory("SodaCan_Pipsi");
+		itemEnt = player.GetInventory().CreateInInventory("TunaCan");
+		itemEnt = player.GetInventory().CreateInInventory("Ammo_380");
+		itemEnt = player.GetInventory().CreateInInventory("MakarovIJ70");player.SetQuickBarEntityShortcut(itemEnt, 0);
+		addMags(player, "Mag_IJ70_8Rnd", 1);
+		itemBs = ItemBase.Cast(itemEnt);
+
 	}
 };
   
