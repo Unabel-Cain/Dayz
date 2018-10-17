@@ -47,6 +47,33 @@ class CustomMission: MissionServer
 		return m_player;
 	}
 	
+	override void OnInit()
+	{
+
+		GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(NumPLayersOnServer, 180000, true);		// 30 seconds
+	}
+	
+	void NumPLayersOnServer()
+	
+	{
+		ref array<Man> players = new array<Man>;
+		GetGame().GetPlayers( players );
+		int numPlayers = players.Count();
+		
+		for ( int i = 0; i < players.Count(); ++i )
+		{
+			Man player = players.Get(i);
+			if( player )
+			{
+				string messPlayers = "Players on the server: " + numPlayers.ToString();
+				Param1<string> m_MessageParam = new Param1<string>(messPlayers); 
+				GetGame().RPCSingleParam(player, ERPCs.RPC_USER_ACTION_MESSAGE, m_MessageParam, true, player.GetIdentity()); 
+
+			}
+		}
+		
+	}
+	
 	void addMags(PlayerBase player, string mag_type, int count)
 	{
 		if (count < 1)
@@ -67,6 +94,7 @@ class CustomMission: MissionServer
 		
 		EntityAI itemEnt;
 		ItemBase itemBs;
+		EntityAI mag;
 	
 		switch (Math.RandomInt(0, 50)) {
 		
@@ -463,11 +491,14 @@ class CustomMission: MissionServer
 			
 		}
 				
+		Weapon wpn = player.GetHumanInventory().CreateInHands("MakarovIJ70");player.GetWeaponManager().AttachMagazine(mag);
 		itemEnt = player.GetInventory().CreateInInventory("SodaCan_Pipsi");
 		itemEnt = player.GetInventory().CreateInInventory("TunaCan");
 		itemEnt = player.GetInventory().CreateInInventory("Ammo_380");
-		itemEnt = player.GetInventory().CreateInInventory("MakarovIJ70");player.SetQuickBarEntityShortcut(itemEnt, 0);
-		addMags(player, "Mag_IJ70_8Rnd", 1);
+		
+		/*itemEnt = player.GetInventory().CreateInInventory("MakarovIJ70");player.SetQuickBarEntityShortcut(itemEnt, 0);*/
+		addMags(player, "Mag_IJ70_8Rnd", 1);	
+		mag = itemEnt.GetInventory().CreateAttachment("Mag_IJ70_8Rnd");
 		itemBs = ItemBase.Cast(itemEnt);
 
 	}
